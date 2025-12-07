@@ -25,7 +25,7 @@ const PORT = process.env.PORT || 5000;
 
 // Configure CORS with specific origin and credentials support
 const corsOptions = {
-  origin: ['http://localhost:5173', 'http://localhost:5174', 'https://alfitra-quiz.onrender.com'], // Support both Vite ports and production
+  origin: ['http://localhost:5173', 'http://localhost:5174', 'https://alfitra-quiz.onrender.com', 'https://alfitraquiz.netlify.app'], // Support both Vite ports and production
   credentials: true, // Allow credentials (cookies, authorization headers)
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
