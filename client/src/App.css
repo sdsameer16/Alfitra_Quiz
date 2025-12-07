@@ -186,17 +186,27 @@ main {
 }
 
 .card {
-  background: var(--bg-card);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
   border-radius: 1rem;
   padding: 1.5rem 2rem;
-  box-shadow: 0 20px 40px var(--shadow);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
   width: 100%;
   max-width: 600px;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.card h2 {
+.card h2,
+.card h3,
+.card h4 {
+  color: #1f2937;
   margin-bottom: 1rem;
+}
+
+.card h4 {
+  font-size: 1.1rem;
+  margin-top: 1rem;
 }
 
 .card input,
@@ -205,13 +215,56 @@ main {
   margin-top: 0.5rem;
 }
 
-.card input {
-  padding: 0.5rem 0.75rem;
+.card input,
+.card textarea,
+.card select {
+  padding: 0.75rem 1rem;
   border-radius: 0.5rem;
-  border: 1px solid var(--border-input);
-  background: var(--bg-input);
-  color: var(--text-primary);
-  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.9);
+  color: #1f2937;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card textarea {
+  min-height: 120px;
+  resize: vertical;
+  line-height: 1.5;
+  font-family: inherit;
+}
+
+.card select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%231f2937' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2.5rem;
+}
+
+.card input:focus,
+.card textarea:focus,
+.card select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.card input::placeholder,
+.card textarea::placeholder {
+  color: #9ca3af;
+}
+
+.card input:disabled,
+.card textarea:disabled,
+.card select:disabled {
+  background: rgba(243, 244, 246, 0.9);
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .card button {
@@ -823,17 +876,142 @@ main {
 
 /* AdminPage fill-blank styles */
 .admin-section .fillblank-inputs {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.1);
   padding: 1rem;
   border-radius: 8px;
   margin-top: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .admin-section .fillblank-field label {
   display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* Admin section form styling */
+.admin-section form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.admin-section h3 {
+  color: #1f2937;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.admin-section label {
+  display: block;
+  color: #374151;
+  font-weight: 600;
+  font-size: 0.95rem;
   margin-bottom: 0.25rem;
-  font-size: 0.9rem;
+}
+
+.admin-section select {
+  width: 100%;
   font-weight: 500;
+}
+
+.admin-section textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.admin-section input[type="text"],
+.admin-section input[type="url"],
+.admin-section input[type="file"] {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.admin-section .form-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.admin-section .form-actions button {
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-section .form-actions button[type="submit"] {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+}
+
+.admin-section .form-actions button[type="submit"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(59, 130, 246, 0.4);
+}
+
+.admin-section .form-actions button[type="button"] {
+  background: rgba(255, 255, 255, 0.9);
+  color: #1f2937;
+  border: 2px solid rgba(59, 130, 246, 0.3);
+}
+
+.admin-section .form-actions button[type="button"]:hover {
+  background: rgba(255, 255, 255, 1);
+  border-color: #3b82f6;
+}
+
+.admin-section .form-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Options list styling for admin page */
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.option-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.option-row input[type="text"] {
+  flex: 1;
+  margin: 0 !important;
+}
+
+.option-row button {
+  width: 40px !important;
+  height: 40px;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: #ef4444 !important;
+  color: white;
+  font-size: 1.5rem;
+  line-height: 1;
+  border-radius: 6px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.option-row button:hover {
+  background: #dc2626 !important;
 }
 
 @media (max-width: 768px) {
