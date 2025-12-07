@@ -25,7 +25,7 @@ const PORT = process.env.PORT || 5000;
 
 // Configure CORS with specific origin and credentials support
 const corsOptions = {
-  origin: ['http://localhost:5173', 'http://localhost:5174'], // Support both Vite ports
+  origin: ['http://localhost:5173', 'http://localhost:5174', 'https://alfitra-quiz.onrender.com'], // Support both Vite ports and production
   credentials: true, // Allow credentials (cookies, authorization headers)
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -46,6 +46,16 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api', quizRoutes);
 app.use('/api', moduleRoutes);
+
+// 404 handler for unmatched routes
+app.use((req, res) => {
+  console.log('404 - Route not found:', req.method, req.url);
+  res.status(404).json({ 
+    message: 'Route not found',
+    path: req.url,
+    method: req.method
+  });
+});
 
 mongoose
   .connect(process.env.MONGO_URI, {

@@ -8,7 +8,7 @@ import QuizPage from './components/QuizPage';
 import ResultsPage from './components/ResultsPage';
 import LeaderboardPage from './components/LeaderboardPage';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'https://alfitra-quiz.onrender.com/api';
 
 function useAuth() {
   const [user, setUser] = useState(() => {
@@ -153,7 +153,7 @@ function AuthPage({ onAuth }) {
     }
 
     try {
-      const endpoint = isLogin ? '/auth/login' : '/auth/register';
+      const endpoint = isLogin ? '/auth/login' : '/auth/signup';
       const url = `${API_BASE}${endpoint}`;
       const requestBody = {
         email: formData.email,

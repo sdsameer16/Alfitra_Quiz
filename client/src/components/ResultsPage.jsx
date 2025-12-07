@@ -1,7 +1,7 @@
 // client/src/components/ResultsPage.jsx
 import { useState, useEffect } from 'react';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'https://alfitra-quiz.onrender.com/api';
 
 export default function ResultsPage() {
   const [submissions, setSubmissions] = useState([]);

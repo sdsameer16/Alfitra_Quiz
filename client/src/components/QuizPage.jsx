@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'https://alfitra-quiz.onrender.com/api';
 
 export default function QuizPage() {
   const [quiz, setQuiz] = useState(null);
