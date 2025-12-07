@@ -15,8 +15,13 @@ export default function AdminPage() {
   const [participants, setParticipants] = useState([]);
   
   const [questionText, setQuestionText] = useState('');
+  const [questionType, setQuestionType] = useState('mcq');
   const [correctOption, setCorrectOption] = useState('');
   const [otherOptions, setOtherOptions] = useState(['', '', '']);
+  const [correctAnswer1, setCorrectAnswer1] = useState('');
+  const [correctAnswer2, setCorrectAnswer2] = useState('');
+  const [answer1Error, setAnswer1Error] = useState('');
+  const [answer2Error, setAnswer2Error] = useState('');
   const [referenceType, setReferenceType] = useState('none');
   const [referenceFile, setReferenceFile] = useState(null);
   const [referenceUrl, setReferenceUrl] = useState('');
@@ -252,16 +257,39 @@ export default function AdminPage() {
       return;
     }
 
-    if (!questionText.trim() || !correctOption.trim()) {
-      setError('Question text and correct option are required');
+    if (!questionText.trim()) {
+      setError('Question text is required');
       return;
     }
 
-    const allOptions = [correctOption, ...otherOptions.filter(opt => opt.trim())];
-    
-    if (allOptions.length < 2) {
-      setError('At least 2 options are required');
-      return;
+    // Validate based on question type
+    if (questionType === 'mcq') {
+      if (!correctOption.trim()) {
+        setError('Correct option is required for MCQ');
+        return;
+      }
+      const allOptions = [correctOption, ...otherOptions.filter(opt => opt.trim())];
+      if (allOptions.length < 2) {
+        setError('At least 2 options are required for MCQ');
+        return;
+      }
+    } else if (questionType === 'fillblank') {
+      if (!correctAnswer1.trim()) {
+        setError('Surah number is required');
+        return;
+      }
+      if (!correctAnswer2.trim()) {
+        setError('Ayat number is required');
+        return;
+      }
+      if (!/^\d+$/.test(correctAnswer1.trim())) {
+        setError('Surah number must contain only numbers');
+        return;
+      }
+      if (!/^\d+$/.test(correctAnswer2.trim())) {
+        setError('Ayat number must contain only numbers');
+        return;
+      }
     }
 
     try {
@@ -289,31 +317,48 @@ export default function AdminPage() {
         referencePdfPublicId = uploadData.publicId;
       }
 
+      // Prepare request body based on question type
+      let requestBody = {
+        quizDayId: selectedDay,
+        text: questionText.trim(),
+        questionType,
+        referenceType,
+        referencePdfUrl,
+        referencePdfPublicId,
+        referenceUrl: referenceType === 'url' ? referenceUrl : '',
+        referenceTitle: (referenceType === 'pdf' || referenceType === 'url') ? referenceTitle : '',
+      };
+
+      if (questionType === 'mcq') {
+        const allOptions = [correctOption, ...otherOptions.filter(opt => opt.trim())];
+        requestBody.options = allOptions;
+        requestBody.correctIndex = 0;
+      } else if (questionType === 'fillblank') {
+        requestBody.correctAnswer1 = correctAnswer1.trim();
+        requestBody.correctAnswer2 = correctAnswer2.trim();
+      }
+
       const res = await fetch(`${API_BASE}/admin/questions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          quizDayId: selectedDay,
-          text: questionText.trim(),
-          options: allOptions,
-          correctIndex: 0,
-          referenceType,
-          referencePdfUrl,
-          referencePdfPublicId,
-          referenceUrl: referenceType === 'url' ? referenceUrl : '',
-          referenceTitle: (referenceType === 'pdf' || referenceType === 'url') ? referenceTitle : '',
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to add question');
 
+      // Reset form
       setQuestionText('');
+      setQuestionType('mcq');
       setCorrectOption('');
       setOtherOptions(['', '', '']);
+      setCorrectAnswer1('');
+      setCorrectAnswer2('');
+      setAnswer1Error('');
+      setAnswer2Error('');
       setReferenceType('none');
       setReferenceFile(null);
       setReferenceUrl('');
@@ -664,49 +709,113 @@ export default function AdminPage() {
                   required
                 />
                 
-                <input
-                  type="text"
-                  placeholder="Correct answer"
-                  value={correctOption}
-                  onChange={(e) => setCorrectOption(e.target.value)}
+                <select
+                  value={questionType}
+                  onChange={(e) => {
+                    setQuestionType(e.target.value);
+                    setAnswer1Error('');
+                    setAnswer2Error('');
+                  }}
                   disabled={!selectedDay}
-                  required
-                />
+                >
+                  <option value="mcq">Multiple Choice (MCQ)</option>
+                  <option value="fillblank">Fill in the Blanks</option>
+                </select>
                 
-                <div className="options-list">
-                  {otherOptions.map((opt, i) => (
-                    <div key={i} className="option-row">
-                      <input
-                        type="text"
-                        placeholder={`Incorrect option ${i + 1}`}
-                        value={opt}
-                        onChange={(e) => handleOptionChange(i, e.target.value)}
-                        disabled={!selectedDay}
-                      />
-                      {otherOptions.length > 1 && (
-                        <button 
-                          type="button"
-                          onClick={() => handleRemoveOption(i)}
-                          disabled={!selectedDay}
-                        >
-                          ×
-                        </button>
-                      )}
+                {questionType === 'mcq' ? (
+                  <>
+                    <input
+                      type="text"
+                      placeholder="Correct answer"
+                      value={correctOption}
+                      onChange={(e) => setCorrectOption(e.target.value)}
+                      disabled={!selectedDay}
+                      required
+                    />
+                    
+                    <div className="options-list">
+                      {otherOptions.map((opt, i) => (
+                        <div key={i} className="option-row">
+                          <input
+                            type="text"
+                            placeholder={`Incorrect option ${i + 1}`}
+                            value={opt}
+                            onChange={(e) => handleOptionChange(i, e.target.value)}
+                            disabled={!selectedDay}
+                          />
+                          {otherOptions.length > 1 && (
+                            <button 
+                              type="button"
+                              onClick={() => handleRemoveOption(i)}
+                              disabled={!selectedDay}
+                            >
+                              ×
+                            </button>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                    
+                    <div className="form-actions">
+                      <button 
+                        type="button" 
+                        onClick={handleAddOption}
+                        disabled={!selectedDay || otherOptions.length >= 5}
+                      >
+                        + Add Option
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="fillblank-inputs">
+                      <div className="fillblank-field">
+                        <input
+                          type="text"
+                          placeholder="Surah Number (numbers only)"
+                          value={correctAnswer1}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === '' || /^\d+$/.test(value)) {
+                              setCorrectAnswer1(value);
+                              setAnswer1Error('');
+                            } else {
+                              setAnswer1Error('Only numbers are allowed');
+                            }
+                          }}
+                          disabled={!selectedDay}
+                          required
+                        />
+                        {answer1Error && <span className="error-text">{answer1Error}</span>}
+                      </div>
+                      
+                      <div className="fillblank-field">
+                        <input
+                          type="text"
+                          placeholder="Ayat Number (numbers only)"
+                          value={correctAnswer2}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === '' || /^\d+$/.test(value)) {
+                              setCorrectAnswer2(value);
+                              setAnswer2Error('');
+                            } else {
+                              setAnswer2Error('Only numbers are allowed');
+                            }
+                          }}
+                          disabled={!selectedDay}
+                          required
+                        />
+                        {answer2Error && <span className="error-text">{answer2Error}</span>}
+                      </div>
+                    </div>
+                  </>
+                )}
                 
-                <div className="form-actions">
-                  <button 
-                    type="button" 
-                    onClick={handleAddOption}
-                    disabled={!selectedDay || otherOptions.length >= 5}
-                  >
-                    + Add Option
-                  </button>
+                <div className="form-actions" style={{ marginTop: '1rem' }}>
                   <button 
                     type="submit"
-                    disabled={!selectedDay || !questionText.trim() || !correctOption.trim()}
+                    disabled={!selectedDay || !questionText.trim()}
                   >
                     Add Question
                   </button>

@@ -6,6 +6,7 @@ const API_BASE = 'https://alfitra-quiz.onrender.com/api';
 export default function QuizPage() {
   const [quiz, setQuiz] = useState(null);
   const [answers, setAnswers] = useState({});
+  const [fillBlankAnswers, setFillBlankAnswers] = useState({}); // Store {questionId: {answer1, answer2}}
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [responsesOpen, setResponsesOpen] = useState(true);
@@ -39,10 +40,21 @@ export default function QuizPage() {
         // Load existing submission if available
         if (data.submission) {
           const existingAnswers = {};
+          const existingFillBlank = {};
           data.submission.answers.forEach(ans => {
-            existingAnswers[ans.question] = ans.selectedIndex;
+            if (ans.selectedIndex !== undefined && ans.selectedIndex !== null) {
+              // MCQ answer
+              existingAnswers[ans.question] = ans.selectedIndex;
+            } else if (ans.userAnswer1 !== undefined && ans.userAnswer2 !== undefined) {
+              // Fill-blank answer
+              existingFillBlank[ans.question] = {
+                answer1: ans.userAnswer1,
+                answer2: ans.userAnswer2
+              };
+            }
           });
           setAnswers(existingAnswers);
+          setFillBlankAnswers(existingFillBlank);
           setResult({
             sectionScores: data.submission.sectionScores,
             totalScore: data.submission.totalScore,
@@ -79,6 +91,25 @@ export default function QuizPage() {
     setError('');
   };
 
+  const handleFillBlankChange = (qid, field, value) => {
+    if (!responsesOpen) {
+      setError('Responses are closed. You cannot update your answers.');
+      return;
+    }
+    // Only allow numbers
+    if (value !== '' && !/^\d+$/.test(value)) {
+      return;
+    }
+    setFillBlankAnswers(prev => ({
+      ...prev,
+      [qid]: {
+        ...prev[qid],
+        [field]: value
+      }
+    }));
+    setError('');
+  };
+
   const handleSave = async () => {
     if (!quiz) return;
     if (!responsesOpen) {
@@ -89,12 +120,30 @@ export default function QuizPage() {
     setError('');
     try {
       const token = localStorage.getItem('qm_token');
-      const payload = {
-        quizDayId: quiz.quizDay._id,
-        answers: Object.entries(answers).map(([questionId, selectedIndex]) => ({
+      
+      // Combine MCQ and fill-blank answers
+      const answersList = [];
+      
+      // Add MCQ answers
+      Object.entries(answers).forEach(([questionId, selectedIndex]) => {
+        answersList.push({
           questionId,
           selectedIndex,
-        })),
+        });
+      });
+      
+      // Add fill-blank answers
+      Object.entries(fillBlankAnswers).forEach(([questionId, { answer1, answer2 }]) => {
+        answersList.push({
+          questionId,
+          userAnswer1: answer1 || '',
+          userAnswer2: answer2 || '',
+        });
+      });
+      
+      const payload = {
+        quizDayId: quiz.quizDay._id,
+        answers: answersList,
         timeTakenSeconds: 0, // No longer tracking time
       };
       
@@ -154,8 +203,14 @@ export default function QuizPage() {
   }
 
   const allQuestions = quiz.questions || [];
-  const allAnswered = Object.keys(answers).length === allQuestions.length;
-  const totalAnswered = Object.keys(answers).length;
+  
+  // Count total answered (MCQ + Fill-blank)
+  const mcqAnswered = Object.keys(answers).length;
+  const fillBlankAnswered = Object.entries(fillBlankAnswers).filter(([_, ans]) => 
+    ans.answer1 && ans.answer2
+  ).length;
+  const totalAnswered = mcqAnswered + fillBlankAnswered;
+  const allAnswered = totalAnswered === allQuestions.length;
   
   const handleDownloadReference = async (url, title) => {
     try {
@@ -430,20 +485,65 @@ export default function QuizPage() {
               </div>
             )}
           </div>
-          <div className="options">
-            {q.options.map((opt, i) => (
-              <label key={i} className={`option ${answers[q._id] === i ? 'selected' : ''}`}>
+          {q.questionType === 'fillblank' ? (
+            <div className="fillblank-inputs" style={{ display: 'flex', gap: '1rem', marginTop: '0.75rem' }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.9rem', color: '#374151' }}>
+                  Surah Number
+                </label>
                 <input
-                  type="radio"
-                  name={q._id}
-                  checked={answers[q._id] === i}
-                  onChange={() => handleSelect(q._id, i)}
+                  type="text"
+                  placeholder="Enter Surah number"
+                  value={fillBlankAnswers[q._id]?.answer1 || ''}
+                  onChange={(e) => handleFillBlankChange(q._id, 'answer1', e.target.value)}
                   disabled={!responsesOpen}
+                  style={{
+                    width: '100%',
+                    padding: '0.6rem',
+                    border: '2px solid #d1d5db',
+                    borderRadius: '8px',
+                    fontSize: '1rem',
+                    boxSizing: 'border-box'
+                  }}
                 />
-                <span>{opt}</span>
-              </label>
-            ))}
-          </div>
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.9rem', color: '#374151' }}>
+                  Ayat Number
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter Ayat number"
+                  value={fillBlankAnswers[q._id]?.answer2 || ''}
+                  onChange={(e) => handleFillBlankChange(q._id, 'answer2', e.target.value)}
+                  disabled={!responsesOpen}
+                  style={{
+                    width: '100%',
+                    padding: '0.6rem',
+                    border: '2px solid #d1d5db',
+                    borderRadius: '8px',
+                    fontSize: '1rem',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="options">
+              {q.options && q.options.map((opt, i) => (
+                <label key={i} className={`option ${answers[q._id] === i ? 'selected' : ''}`}>
+                  <input
+                    type="radio"
+                    name={q._id}
+                    checked={answers[q._id] === i}
+                    onChange={() => handleSelect(q._id, i)}
+                    disabled={!responsesOpen}
+                  />
+                  <span>{opt}</span>
+                </label>
+              ))}
+            </div>
+          )}
         </div>
       ))}
       

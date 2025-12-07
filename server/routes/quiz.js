@@ -102,8 +102,11 @@ router.post('/admin/questions', authRequired, adminRequired, async (req, res) =>
     const { 
       quizDayId, 
       text, 
+      questionType = 'mcq',
       options, 
       correctIndex,
+      correctAnswer1,
+      correctAnswer2,
       referenceType = 'none',
       referencePdfUrl = '',
       referencePdfPublicId = '',
@@ -111,17 +114,27 @@ router.post('/admin/questions', authRequired, adminRequired, async (req, res) =>
       referenceTitle = ''
     } = req.body;
     
-    const q = await Question.create({
+    const questionData = {
       quizDay: quizDayId,
       text,
-      options,
-      correctIndex,
+      questionType,
       referenceType,
       referencePdfUrl,
       referencePdfPublicId,
       referenceUrl,
       referenceTitle,
-    });
+    };
+
+    // Add type-specific fields
+    if (questionType === 'mcq') {
+      questionData.options = options;
+      questionData.correctIndex = correctIndex;
+    } else if (questionType === 'fillblank') {
+      questionData.correctAnswer1 = correctAnswer1;
+      questionData.correctAnswer2 = correctAnswer2;
+    }
+    
+    const q = await Question.create(questionData);
     res.status(201).json(q);
   } catch (err) {
     console.error(err);
@@ -165,8 +178,14 @@ router.get('/quiz', authRequired, async (req, res) => {
     
     const questions = await Question.find({ quizDay: quizDay._id }).lean();
     
-    // Shuffle options for each question and track the new correct index
+    // Shuffle options for MCQ questions only
     const questionsWithShuffledOptions = questions.map((q) => {
+      if (q.questionType === 'fillblank') {
+        // Return fill-blank questions as-is
+        return q;
+      }
+      
+      // Shuffle MCQ options
       const originalOptions = [...q.options];
       const originalCorrectIndex = q.correctIndex;
       const shuffledOptions = shuffleArray(originalOptions);
@@ -222,16 +241,33 @@ router.post('/quiz/submit', authRequired, async (req, res) => {
     const answerDocs = answers.map((a) => {
       const q = questionMap.get(a.questionId);
       if (!q) return null;
-      const isCorrect = a.selectedIndex === q.correctIndex;
+      
+      let isCorrect = false;
+      let answerDoc = {
+        question: q._id,
+        isCorrect: false,
+      };
+      
+      if (q.questionType === 'fillblank') {
+        // Check fill-blank answer (both must be correct)
+        isCorrect = a.userAnswer1?.trim() === q.correctAnswer1 && 
+                   a.userAnswer2?.trim() === q.correctAnswer2;
+        answerDoc.userAnswer1 = a.userAnswer1 || '';
+        answerDoc.userAnswer2 = a.userAnswer2 || '';
+        answerDoc.isCorrect = isCorrect;
+      } else {
+        // MCQ answer
+        isCorrect = a.selectedIndex === q.correctIndex;
+        answerDoc.selectedIndex = a.selectedIndex;
+        answerDoc.isCorrect = isCorrect;
+      }
+      
       if (isCorrect) {
         sectionScores[q.section] += 1;
         totalScore += 1;
       }
-      return {
-        question: q._id,
-        selectedIndex: a.selectedIndex,
-        isCorrect,
-      };
+      
+      return answerDoc;
     }).filter(Boolean);
 
     // Check if submission already exists

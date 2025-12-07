@@ -782,3 +782,68 @@ main {
     gap: 2rem;
   }
 }
+
+/* Fill-in-the-blank question styles */
+.fillblank-inputs {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.fillblank-field {
+  flex: 1;
+}
+
+.fillblank-field input {
+  width: 100%;
+  padding: 0.6rem;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.fillblank-field input:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.fillblank-field input:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+}
+
+.error-text {
+  display: block;
+  color: #dc2626;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+/* AdminPage fill-blank styles */
+.admin-section .fillblank-inputs {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+}
+
+.admin-section .fillblank-field label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .fillblank-inputs {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .fillblank-field input {
+    font-size: 0.95rem;
+    padding: 0.5rem;
+  }
+}

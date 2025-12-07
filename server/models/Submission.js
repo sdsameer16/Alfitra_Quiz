@@ -7,7 +7,10 @@ const submissionSchema = new mongoose.Schema(
     answers: [
       {
         question: { type: mongoose.Schema.Types.ObjectId, ref: 'Question', required: true },
-        selectedIndex: { type: Number, required: true },
+        selectedIndex: { type: Number },
+        // Fill in the blank answers
+        userAnswer1: { type: String },
+        userAnswer2: { type: String },
         isCorrect: { type: Boolean, required: true },
       },
     ],
