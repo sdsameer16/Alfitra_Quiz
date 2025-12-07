@@ -15,6 +15,7 @@
 /* Mobile responsiveness for background */
 @media (max-width: 768px) {
   .app-root {
+    background-image: url('/bk_for_mobile.png');
     background-attachment: scroll;
     background-size: cover;
   }
