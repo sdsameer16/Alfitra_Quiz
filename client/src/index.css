@@ -1,0 +1,58 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  /* Dark theme (default) */
+  --bg-primary: #0f172a;
+  --bg-secondary: #020617;
+  --bg-card: #020617;
+  --bg-input: #020617;
+  --text-primary: #e5e7eb;
+  --text-secondary: #9ca3af;
+  --border-color: #1f2937;
+  --border-input: #4b5563;
+  --accent: #22c55e;
+  --accent-dark: #16a34a;
+  --accent-text: #022c22;
+  --error-bg: #7f1d1d;
+  --error-border: #991b1b;
+  --marquee-bg: #022c22;
+  --marquee-text: #bbf7d0;
+  --shadow: rgba(0, 0, 0, 0.6);
+}
+
+[data-theme='light'] {
+  /* Light theme */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --bg-input: #ffffff;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --border-color: #e2e8f0;
+  --border-input: #cbd5e1;
+  --accent: #22c55e;
+  --accent-dark: #16a34a;
+  --accent-text: #ffffff;
+  --error-bg: #fee2e2;
+  --error-border: #fca5a5;
+  --marquee-bg: #dcfce7;
+  --marquee-text: #166534;
+  --shadow: rgba(0, 0, 0, 0.1);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+a {
+  color: inherit;
+}
