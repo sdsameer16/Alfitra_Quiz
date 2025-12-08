@@ -36,40 +36,64 @@ function useAuth() {
 function Layout({ children, user, onLogout }) {
   const location = useLocation();
   const [theme] = useState('light');
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', 'light');
     localStorage.setItem('qm_theme', 'light');
   }, []);
 
+  useEffect(() => {
+    // Close menu on route change
+    setMenuOpen(false);
+  }, [location.pathname]);
+
   const isQuizPage = location.pathname === '/quiz';
+
+  const handleMenuToggle = () => {
+    setMenuOpen(!menuOpen);
+  };
+
+  const closeMenu = () => {
+    setMenuOpen(false);
+  };
 
   return (
     <div className={`app-root ${isQuizPage ? 'quiz-page' : ''}`}>
       {!isQuizPage && (
-        <header className="app-header">
-          <div className="left">
-            <span className="logo-text">QuizMern</span>
-          </div>
-          <div className="center">
-            {/* Timer and section buttons removed */}
-          </div>
-          <div className="right">
-            {user?.role !== 'admin' && <Link to="/">Home</Link>}
-            {user?.role !== 'admin' && <Link to="/quiz">Quiz</Link>}
-            {user?.role !== 'admin' && <Link to="/results">Results</Link>}
-            <Link to="/profile">Profile</Link>
-            {user?.role === 'admin' && <Link to="/admin">Admin</Link>}
-            {user?.role === 'admin' && <Link to="/leaderboard">Leaderboard</Link>}
-            {user ? (
-              <button onClick={onLogout} className="link-button">
-                Logout
-              </button>
-            ) : (
-              <Link to="/auth">Login / Signup</Link>
-            )}
-          </div>
-        </header>
+        <>          
+          <header className="app-header">
+            <div className="left">
+              <span className="logo-text">QuizMern</span>
+            </div>
+            <div className="center">
+              {/* Timer and section buttons removed */}
+            </div>
+            
+            {/* Hamburger Menu Button */}
+            <button className="hamburger" onClick={handleMenuToggle} aria-label="Menu">
+              <span></span>
+              <span></span>
+              <span></span>
+            </button>
+
+            <div className={`right ${menuOpen ? 'mobile-menu-open' : ''}`}>
+              {user?.role !== 'admin' && <Link to="/" onClick={closeMenu}>Home</Link>}
+              {user?.role !== 'admin' && <Link to="/quiz" onClick={closeMenu}>Quiz</Link>}
+              {user?.role !== 'admin' && <Link to="/results" onClick={closeMenu}>Results</Link>}
+              <Link to="/profile" onClick={closeMenu}>Profile</Link>
+              {user?.role === 'admin' && <Link to="/admin" onClick={closeMenu}>Admin</Link>}
+              {user?.role === 'admin' && <Link to="/leaderboard" onClick={closeMenu}>Leaderboard</Link>}
+              {user ? (
+                <button onClick={() => { onLogout(); closeMenu(); }} className="link-button">
+                  Logout
+                </button>
+              ) : (
+                <Link to="/auth" onClick={closeMenu}>Login / Signup</Link>
+              )}
+            </div>
+          </header>
+        </>
       )}
 
       <main className="app-main">
