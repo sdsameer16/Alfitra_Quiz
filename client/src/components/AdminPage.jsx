@@ -1,4 +1,24 @@
 import { useState, useEffect } from 'react';
+import {
+  TextField,
+  Select,
+  MenuItem,
+  Button,
+  FormControl,
+  InputLabel,
+  Box,
+  Typography,
+  Container,
+  Grid,
+  Card,
+  CardContent,
+  IconButton,
+  Alert,
+  CircularProgress,
+  FormHelperText,
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
 
 const API_BASE = 'https://alfitra-quiz.onrender.com/api';
 
@@ -644,184 +664,229 @@ export default function AdminPage() {
           </div>
 
           <div className="admin-section">
-            <h3>Add Questions</h3>
-            <div className="card">
-              <select 
-                value={selectedDay} 
-                onChange={(e) => {
-                  setSelectedDay(e.target.value);
-                  loadParticipants(e.target.value);
-                }}
-              >
-                <option value="">Select a quiz day</option>
-                {days.map((day) => (
-                  <option key={day._id} value={day._id}>
-                    {day.dateLabel}
-                  </option>
-                ))}
-              </select>
-              
-              <form onSubmit={handleAddQuestion}>
-                <select
-                  value={referenceType}
-                  onChange={(e) => setReferenceType(e.target.value)}
-                  disabled={!selectedDay}
-                >
-                  <option value="none">No Reference</option>
-                  <option value="pdf">PDF Reference</option>
-                  <option value="url">URL Reference</option>
-                </select>
-                
-                {referenceType !== 'none' && (
-                  <input
-                    type="text"
-                    placeholder="Reference title"
-                    value={referenceTitle}
-                    onChange={(e) => setReferenceTitle(e.target.value)}
-                    disabled={!selectedDay}
-                  />
-                )}
-                
-                {referenceType === 'pdf' && (
-                  <input
-                    type="file"
-                    accept=".pdf"
-                    onChange={(e) => setReferenceFile(e.target.files[0])}
-                    disabled={!selectedDay}
-                  />
-                )}
-                
-                {referenceType === 'url' && (
-                  <input
-                    type="url"
-                    placeholder="Reference URL"
-                    value={referenceUrl}
-                    onChange={(e) => setReferenceUrl(e.target.value)}
-                    disabled={!selectedDay}
-                  />
-                )}
-                
-                <textarea
-                  placeholder="Question text"
-                  value={questionText}
-                  onChange={(e) => setQuestionText(e.target.value)}
-                  disabled={!selectedDay}
-                  required
-                />
-                
-                <select
-                  value={questionType}
-                  onChange={(e) => {
-                    setQuestionType(e.target.value);
-                    setAnswer1Error('');
-                    setAnswer2Error('');
-                  }}
-                  disabled={!selectedDay}
-                >
-                  <option value="mcq">Multiple Choice (MCQ)</option>
-                  <option value="fillblank">Fill in the Blanks</option>
-                </select>
-                
-                {questionType === 'mcq' ? (
-                  <>
-                    <input
-                      type="text"
-                      placeholder="Correct answer"
-                      value={correctOption}
-                      onChange={(e) => setCorrectOption(e.target.value)}
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, color: '#1f2937', mb: 2 }}>
+              Add Questions
+            </Typography>
+            <Card sx={{ bgcolor: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(10px)' }}>
+              <CardContent>
+                <Box component="form" onSubmit={handleAddQuestion} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Select Quiz Day</InputLabel>
+                    <Select
+                      value={selectedDay}
+                      label="Select Quiz Day"
+                      onChange={(e) => {
+                        setSelectedDay(e.target.value);
+                        loadParticipants(e.target.value);
+                      }}
+                    >
+                      <MenuItem value="">Select a quiz day</MenuItem>
+                      {days.map((day) => (
+                        <MenuItem key={day._id} value={day._id}>
+                          {day.dateLabel}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+
+                  <FormControl fullWidth disabled={!selectedDay}>
+                    <InputLabel>Reference Type</InputLabel>
+                    <Select
+                      value={referenceType}
+                      label="Reference Type"
+                      onChange={(e) => setReferenceType(e.target.value)}
+                    >
+                      <MenuItem value="none">No Reference</MenuItem>
+                      <MenuItem value="pdf">PDF Reference</MenuItem>
+                      <MenuItem value="url">URL Reference</MenuItem>
+                    </Select>
+                  </FormControl>
+
+                  {referenceType !== 'none' && (
+                    <TextField
+                      fullWidth
+                      label="Reference Title"
+                      placeholder="Enter reference title"
+                      value={referenceTitle}
+                      onChange={(e) => setReferenceTitle(e.target.value)}
                       disabled={!selectedDay}
-                      required
                     />
-                    
-                    <div className="options-list">
+                  )}
+
+                  {referenceType === 'pdf' && (
+                    <Button
+                      variant="outlined"
+                      component="label"
+                      disabled={!selectedDay}
+                      sx={{ justifyContent: 'flex-start', textAlign: 'left', py: 1.5 }}
+                    >
+                      {referenceFile ? referenceFile.name : 'Upload PDF Reference'}
+                      <input
+                        type="file"
+                        hidden
+                        accept=".pdf"
+                        onChange={(e) => setReferenceFile(e.target.files[0])}
+                      />
+                    </Button>
+                  )}
+
+                  {referenceType === 'url' && (
+                    <TextField
+                      fullWidth
+                      label="Reference URL"
+                      type="url"
+                      placeholder="https://example.com"
+                      value={referenceUrl}
+                      onChange={(e) => setReferenceUrl(e.target.value)}
+                      disabled={!selectedDay}
+                    />
+                  )}
+
+                  <TextField
+                    fullWidth
+                    label="Question Text"
+                    placeholder="Enter your question here"
+                    multiline
+                    rows={4}
+                    value={questionText}
+                    onChange={(e) => setQuestionText(e.target.value)}
+                    disabled={!selectedDay}
+                    required
+                  />
+
+                  <FormControl fullWidth disabled={!selectedDay}>
+                    <InputLabel>Question Type</InputLabel>
+                    <Select
+                      value={questionType}
+                      label="Question Type"
+                      onChange={(e) => {
+                        setQuestionType(e.target.value);
+                        setAnswer1Error('');
+                        setAnswer2Error('');
+                      }}
+                    >
+                      <MenuItem value="mcq">Multiple Choice (MCQ)</MenuItem>
+                      <MenuItem value="fillblank">Fill in the Blanks</MenuItem>
+                    </Select>
+                  </FormControl>
+
+                  {questionType === 'mcq' ? (
+                    <Box>
+                      <TextField
+                        fullWidth
+                        label="Correct Answer"
+                        placeholder="Enter the correct answer"
+                        value={correctOption}
+                        onChange={(e) => setCorrectOption(e.target.value)}
+                        disabled={!selectedDay}
+                        required
+                        sx={{ mb: 2 }}
+                      />
+
+                      <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                        Incorrect Options
+                      </Typography>
                       {otherOptions.map((opt, i) => (
-                        <div key={i} className="option-row">
-                          <input
-                            type="text"
+                        <Box key={i} sx={{ display: 'flex', gap: 1, mb: 1.5 }}>
+                          <TextField
+                            fullWidth
                             placeholder={`Incorrect option ${i + 1}`}
                             value={opt}
                             onChange={(e) => handleOptionChange(i, e.target.value)}
                             disabled={!selectedDay}
+                            size="small"
                           />
                           {otherOptions.length > 1 && (
-                            <button 
-                              type="button"
+                            <IconButton
+                              color="error"
                               onClick={() => handleRemoveOption(i)}
                               disabled={!selectedDay}
+                              sx={{ flexShrink: 0 }}
                             >
-                              ×
-                            </button>
+                              <DeleteIcon />
+                            </IconButton>
                           )}
-                        </div>
+                        </Box>
                       ))}
-                    </div>
-                    
-                    <div className="form-actions">
-                      <button 
-                        type="button" 
+
+                      <Button
+                        variant="outlined"
+                        startIcon={<AddIcon />}
                         onClick={handleAddOption}
                         disabled={!selectedDay || otherOptions.length >= 5}
+                        sx={{ mt: 1 }}
                       >
-                        + Add Option
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="fillblank-inputs">
-                      <div className="fillblank-field">
-                        <input
-                          type="text"
-                          placeholder="Surah Number (numbers only)"
-                          value={correctAnswer1}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (value === '' || /^\d+$/.test(value)) {
-                              setCorrectAnswer1(value);
-                              setAnswer1Error('');
-                            } else {
-                              setAnswer1Error('Only numbers are allowed');
-                            }
-                          }}
-                          disabled={!selectedDay}
-                          required
-                        />
-                        {answer1Error && <span className="error-text">{answer1Error}</span>}
-                      </div>
-                      
-                      <div className="fillblank-field">
-                        <input
-                          type="text"
-                          placeholder="Ayat Number (numbers only)"
-                          value={correctAnswer2}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (value === '' || /^\d+$/.test(value)) {
-                              setCorrectAnswer2(value);
-                              setAnswer2Error('');
-                            } else {
-                              setAnswer2Error('Only numbers are allowed');
-                            }
-                          }}
-                          disabled={!selectedDay}
-                          required
-                        />
-                        {answer2Error && <span className="error-text">{answer2Error}</span>}
-                      </div>
-                    </div>
-                  </>
-                )}
-                
-                <div className="form-actions" style={{ marginTop: '1rem' }}>
-                  <button 
+                        Add Option
+                      </Button>
+                    </Box>
+                  ) : (
+                    <Box>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            fullWidth
+                            label="Surah Number"
+                            placeholder="Enter Surah number"
+                            value={correctAnswer1}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (value === '' || /^\d+$/.test(value)) {
+                                setCorrectAnswer1(value);
+                                setAnswer1Error('');
+                              } else {
+                                setAnswer1Error('Only numbers are allowed');
+                              }
+                            }}
+                            disabled={!selectedDay}
+                            required
+                            error={!!answer1Error}
+                            helperText={answer1Error}
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            fullWidth
+                            label="Ayat Number"
+                            placeholder="Enter Ayat number"
+                            value={correctAnswer2}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (value === '' || /^\d+$/.test(value)) {
+                                setCorrectAnswer2(value);
+                                setAnswer2Error('');
+                              } else {
+                                setAnswer2Error('Only numbers are allowed');
+                              }
+                            }}
+                            disabled={!selectedDay}
+                            required
+                            error={!!answer2Error}
+                            helperText={answer2Error}
+                          />
+                        </Grid>
+                      </Grid>
+                    </Box>
+                  )}
+
+                  <Button
                     type="submit"
-                    disabled={!selectedDay || !questionText.trim()}
+                    variant="contained"
+                    size="large"
+                    disabled={!selectedDay || !questionText.trim() || isLoading}
+                    sx={{
+                      mt: 2,
+                      py: 1.5,
+                      background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                      },
+                    }}
                   >
-                    Add Question
-                  </button>
-                </div>
-              </form>
-            </div>
+                    {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Add Question'}
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
           </div>
 
           <div className="admin-section">
@@ -928,8 +993,16 @@ export default function AdminPage() {
         </>
       )}
       
-      {error && <div className="error-message">{error}</div>}
-      {success && <div className="success-message">{success}</div>}
+      {error && (
+        <Alert severity="error" sx={{ mt: 2, mx: 2 }} onClose={() => setError('')}>
+          {error}
+        </Alert>
+      )}
+      {success && (
+        <Alert severity="success" sx={{ mt: 2, mx: 2 }} onClose={() => setSuccess('')}>
+          {success}
+        </Alert>
+      )}
     </div>
   );
 }
